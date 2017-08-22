@@ -1,11 +1,16 @@
 ##################################################
 #
-#   what to do next:
+#   This demo is based on google's drive API example.
+#
+#
+#   Its purpose is to:
 #   1. get all image files sorted by createdTime from photos space
 #   2. sample from the list some IDs
-#   3. download them onto a directory  
+#   3. If required, delete current pictures from the designated directory
+#   4. Download the sampled photos into the pictures directory  
 #
 #   references:
+#   https://developers.google.com/drive/v3/web/quickstart/python - google API python intro
 #   https://developers.google.com/drive/v3/web/search-parameters - search files
 #   https://developers.google.com/drive/v3/reference/files/list
 #   https://developers.google.com/drive/v3/reference/files/get
@@ -14,7 +19,6 @@
 #   Note that in order to revoke the oAUth permissions, need to delete the JSON copy in ~/.credentials -
 #   if not, it stays there with the old credentials
 #
-#   TODO: Add argprse, set the directory automatically, remove old files, run on each login/a few hours
 #
 ##################################################
 
