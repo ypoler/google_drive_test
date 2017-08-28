@@ -170,25 +170,34 @@ def main():
 
     Creates a Google Drive API service object and outputs the names and IDs
     for up to 10 files.
-    """		
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('drive', 'v3', http=http)
-    print("Connected to Google services...")
+    """
+    try:
+        credentials = get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        service = discovery.build('drive', 'v3', http=http)
+        print("Connected to Google services...")
 
-    pictures_list = get_google_photos_filelist( service.files() )
-    print('Found {0} files in photos'.format(len(pictures_list)) )
+        pictures_list = get_google_photos_filelist( service.files() )
+        print('Found {0} files in photos'.format(len(pictures_list)) )
 
-    sample_pics = sample_pictures_from_list(pictures_list, args.num_samples)
-    print('Sampled {0} files from photos'.format(len(sample_pics)) )
+        sample_pics = sample_pictures_from_list(pictures_list, args.num_samples)
+        print('Sampled {0} files from photos'.format(len(sample_pics)) )
 
-    base_folder = os.getcwd() + "\\pictures"
-    if (args.delete_old == True):
-    	remove_files_from_dir(base_folder)
-    	print('Removed old files from {0}'.format(base_folder)) 
+        base_folder = os.getcwd() + "\\pictures"
+        if (args.delete_old == True):
+    	    remove_files_from_dir(base_folder)
+    	    print('Removed old files from {0}'.format(base_folder)) 
 		
-    download_pictures_to_dir( service.files(), sample_pics, base_folder )
-    print('Downloaded {0} files to {1}'.format(len(sample_pics), base_folder) )
-	
+        download_pictures_to_dir( service.files(), sample_pics, base_folder )
+        print('Downloaded {0} files to {1}'.format(len(sample_pics), base_folder) )
+
+    except Exception as e:
+        if hasattr(e, 'message'):
+            print('Exception: {0}'.format(e.message))
+        else:
+            print('Exception: {0}'.format(e))
+        raw_input("Press Enter to continue...")		# wait for keypress to close the windows
+			
+		
 if __name__ == '__main__':
     main()
