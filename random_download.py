@@ -44,7 +44,6 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 try:
-    import argparse
     parser = argparse.ArgumentParser(parents=[tools.argparser])
     parser.add_argument('--num_samples', dest='num_samples', type=int, default=15,
                     help='Number of samples to take from the full image list')
