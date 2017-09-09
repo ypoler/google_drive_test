@@ -45,6 +45,8 @@ from oauth2client.file import Storage
 
 try:
     parser = argparse.ArgumentParser(parents=[tools.argparser])
+    parser.add_argument('--target_dir', dest='target_dir', default="./pictures",
+                    help='folder to place te pictures in')
     parser.add_argument('--num_samples', dest='num_samples', type=int, default=15,
                     help='Number of samples to take from the full image list')
     parser.add_argument('--delete_old', dest='delete_old', action='store_true', default='False',
@@ -148,8 +150,14 @@ def sample_pictures_from_list(full_list, num):
 
 def download_pictures_to_dir(files_service, picture_list, base_dir):
     """
-	Download files from the pictures list into the base_dir
+	Create base_dir (if doesn't exist yet)
 	"""
+    if os.path.exists(base_dir) == False:
+        os.mkdir(base_dir)
+	   
+    """
+	Download files from the pictures list into the base_dir
+    """	   
     for pic in picture_list:
         name = pic[0]
         id = pic[1]
@@ -182,7 +190,7 @@ def main():
         sample_pics = sample_pictures_from_list(pictures_list, args.num_samples)
         print('Sampled {0} files from photos'.format(len(sample_pics)) )
 
-        base_folder = os.getcwd() + "\\pictures"
+        base_folder = args.target_dir #os.getcwd() + "\\pictures"
         if (args.delete_old == True):
     	    remove_files_from_dir(base_folder)
     	    print('Removed old files from {0}'.format(base_folder)) 
