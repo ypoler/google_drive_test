@@ -149,22 +149,35 @@ def sample_pictures_from_list(full_list, num):
 
 
 def download_pictures_to_dir(files_service, picture_list, base_dir):
+    cnt_files = 0
+	
     """
-	Create base_dir (if doesn't exist yet)
-	"""
+    Create base_dir (if doesn't exist yet)
+    """
     if os.path.exists(base_dir) == False:
         os.mkdir(base_dir)
 	   
     """
-	Download files from the pictures list into the base_dir
+	Download files from the pictures list into the base_dir.
+	In case of exception, continue to the next sample
     """	   
     for pic in picture_list:
         name = pic[0]
         id = pic[1]
         filename = base_dir + "\\" + name
-        download_file(files_service, id, filename)
-        print("Downloaded file: " + name)
-        
+        try:
+            download_file(files_service, id, filename)
+            print("Downloaded file: " + name)
+            cnt_files = cnt_files+1
+        except Exception as e:
+            if hasattr(e, 'message'):
+                print('Failed to download {0}. Exception: {1}'.format(filename, e.message))
+            else:
+                print('Failed to download {0}. Exception: {1}'.format(filename, e))
+#            if (os.path.exists(filename) == True): os.remove(filename)
+
+    return cnt_files
+			
 
 def remove_files_from_dir(base_dir):
 	old_files = glob.glob(base_dir + "\*");
@@ -195,8 +208,8 @@ def main():
     	    remove_files_from_dir(base_folder)
     	    print('Removed old files from {0}'.format(base_folder)) 
 		
-        download_pictures_to_dir( service.files(), sample_pics, base_folder )
-        print('Downloaded {0} files to {1}'.format(len(sample_pics), base_folder) )
+        num_downloaded_files = download_pictures_to_dir( service.files(), sample_pics, base_folder )
+        print('Downloaded {0} files to {1}'.format(num_downloaded_files, base_folder) )
 
     except Exception as e:
         if hasattr(e, 'message'):
