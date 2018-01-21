@@ -4,7 +4,7 @@
 #
 #
 #   Its purpose is to:
-#   1. get all image files sorted by createdTime from photos space
+#   1. get all image files sorted by createdTime from "google photos" folder
 #   2. sample from the list some IDs
 #   3. If required, delete current pictures from the designated directory
 #   4. Download the sampled photos into the pictures directory  
@@ -58,7 +58,7 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/drive-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/drive.photos.readonly'
+SCOPES = 'https://www.googleapis.com/auth/drive.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Drive API Python Quickstart'
 
@@ -95,7 +95,6 @@ def get_credentials():
 def add_files_results_id_name(files_service, query):
     """
 	Run a query which yields id + name and return all those file tuples as array
-	NOTE: the query will run only at the "photos" scope, hence limited to photos
 	"""
     file_arr = []
     page_token = None
@@ -103,7 +102,7 @@ def add_files_results_id_name(files_service, query):
         results = files_service.list(q=query,
             fields="nextPageToken, files(id, name)",
             orderBy="createdTime",
-			spaces="photos",
+			spaces="drive",
             pageToken=page_token).execute()
         items = results.get('files', [])
         if not items:
@@ -120,9 +119,20 @@ def add_files_results_id_name(files_service, query):
 				
 def get_google_photos_filelist(files_service):
     """
-    Query google photos (we're already in this scope) for 
+    Query google photos directory (hierarchical per year)
     """
-    query_str = "mimeType contains 'image/'"
+
+    # First, get the root "Google photos" directory
+    query_str = "mimeType='application/vnd.google-apps.folder' and name = 'Google Photos'"
+    photos_dir = add_files_results_id_name(files_service, query_str)
+    _, photos_dir_id = photos_dir[0]
+
+    # Next, bring its children (one directory per year)
+    query_str = "mimeType='application/vnd.google-apps.folder' and parents in '" + photos_dir_id + "'"
+    photos_subdirs = add_files_results_id_name(files_service, query_str)
+
+    # Finally, concat all children IDs to the query and search the Images
+    query_str = "mimeType contains 'image/' and parents in '" + "', '".join(photos_dir_id for _, photos_dir_id in photos_subdirs) + "'"
     pictures_list = add_files_results_id_name(files_service, query_str)
     return pictures_list
 
@@ -205,9 +215,9 @@ def main():
 
         base_folder = args.target_dir #os.getcwd() + "\\pictures"
         if (args.delete_old == True):
-    	    remove_files_from_dir(base_folder)
-    	    print('Removed old files from {0}'.format(base_folder)) 
-		
+            remove_files_from_dir(base_folder)
+            print('Removed old files from {0}'.format(base_folder))
+
         num_downloaded_files = download_pictures_to_dir( service.files(), sample_pics, base_folder )
         print('Downloaded {0} files to {1}'.format(num_downloaded_files, base_folder) )
 
